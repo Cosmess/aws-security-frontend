@@ -19,12 +19,13 @@ const App: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post<ApiResponse>('http://localhost:3000/access', {
+      const apiUrl = process.env.REACT_APP_API_URL;
+      console.log(apiUrl);
+      await axios.post<ApiResponse>(`${apiUrl}`, {
         ruleDescription,
         ip,
         typeGroup,
-        typeService,
-        email: 'user@example.com', // Substitua pelo email do usuário
+        typeService
       });
       setMessage('IP liberado com sucesso!');
       setAlertType('success');
@@ -52,7 +53,7 @@ const App: React.FC = () => {
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="E-mail"
+            label="Rule Description"
             fullWidth
             margin="normal"
             value={ruleDescription}
@@ -71,7 +72,7 @@ const App: React.FC = () => {
             Obter meu IP
           </Button>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Ambiente</InputLabel>
+            <InputLabel>Type Group</InputLabel>
             <Select
               value={typeGroup}
               onChange={(e: SelectChangeEvent<string>) => setTypeGroup(e.target.value as string)}
@@ -83,7 +84,7 @@ const App: React.FC = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Serviço</InputLabel>
+            <InputLabel>Type Service</InputLabel>
             <Select
               value={typeService}
               onChange={(e: SelectChangeEvent<string>) => setTypeService(e.target.value as string)}
