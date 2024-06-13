@@ -15,17 +15,32 @@ const App: React.FC = () => {
   const [typeService, setTypeService] = useState<string>('mysql');
   const [message, setMessage] = useState<string>('');
   const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [verificationCode, setVerificationCode] = useState<string>('');
+
+  const handleSendCode = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL;
+      await axios.post(`${apiUrl}/send-code`, { email: ruleDescription });
+      setMessage('Código de verificação enviado para o email');
+      setAlertType('success');
+    } catch (error: any) {
+      setMessage('Erro ao enviar código de verificação: ' + (error.response?.data.message || error.message));
+      setAlertType('error');
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       const apiUrl = process.env.REACT_APP_API_URL;
-      console.log(apiUrl);
-      await axios.post<ApiResponse>(`${apiUrl}`, {
+      await axios.post<ApiResponse>(`${apiUrl}/verify`, {
         ruleDescription,
         ip,
+        email: ruleDescription,
+        verificationCode,
         typeGroup,
-        typeService
+        typeService,
       });
       setMessage('IP liberado com sucesso!');
       setAlertType('success');
@@ -51,15 +66,28 @@ const App: React.FC = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Liberação de IP
         </Typography>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSendCode}>
           <TextField
-            label="Rule Description"
+            label="Email"
             fullWidth
             margin="normal"
             value={ruleDescription}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setRuleDescription(e.target.value)}
             required
           />
+          <Button variant="outlined" color="secondary" type="submit" fullWidth sx={{ mt: 1 }}>
+            Enviar Código de Verificação
+          </Button>
+        </form>
+        <TextField
+            label="Código de Verificação"
+            fullWidth
+            margin="normal"
+            value={verificationCode}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setVerificationCode(e.target.value)}
+            required
+          />
+        <form onSubmit={handleSubmit}>
           <TextField
             label="IP"
             fullWidth
@@ -72,7 +100,7 @@ const App: React.FC = () => {
             Obter meu IP
           </Button>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Type Group</InputLabel>
+            <InputLabel>Ambiente</InputLabel>
             <Select
               value={typeGroup}
               onChange={(e: SelectChangeEvent<string>) => setTypeGroup(e.target.value as string)}
@@ -84,7 +112,7 @@ const App: React.FC = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel>Type Service</InputLabel>
+            <InputLabel>Servico</InputLabel>
             <Select
               value={typeService}
               onChange={(e: SelectChangeEvent<string>) => setTypeService(e.target.value as string)}
